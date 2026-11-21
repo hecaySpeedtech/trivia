@@ -32,21 +32,39 @@ CREATE POLICY "docentes_update_own_keep_role" ON app.docentes
 -- Catalogos de solo lectura: cycles, levels, logros
 CREATE POLICY "cycles_select_all" ON app.cycles
   FOR SELECT TO authenticated USING (true);
-CREATE POLICY "cycles_admin_write" ON app.cycles
-  FOR ALL TO authenticated
+CREATE POLICY "cycles_admin_insert" ON app.cycles
+  FOR INSERT TO authenticated
+  WITH CHECK (app.is_super_admin());
+CREATE POLICY "cycles_admin_update" ON app.cycles
+  FOR UPDATE TO authenticated
   USING (app.is_super_admin()) WITH CHECK (app.is_super_admin());
+CREATE POLICY "cycles_admin_delete" ON app.cycles
+  FOR DELETE TO authenticated
+  USING (app.is_super_admin());
 
 CREATE POLICY "levels_select_all" ON app.levels
   FOR SELECT TO authenticated USING (true);
-CREATE POLICY "levels_admin_write" ON app.levels
-  FOR ALL TO authenticated
+CREATE POLICY "levels_admin_insert" ON app.levels
+  FOR INSERT TO authenticated
+  WITH CHECK (app.is_super_admin());
+CREATE POLICY "levels_admin_update" ON app.levels
+  FOR UPDATE TO authenticated
   USING (app.is_super_admin()) WITH CHECK (app.is_super_admin());
+CREATE POLICY "levels_admin_delete" ON app.levels
+  FOR DELETE TO authenticated
+  USING (app.is_super_admin());
 
 CREATE POLICY "logros_select_all" ON app.logros
   FOR SELECT TO authenticated USING (true);
-CREATE POLICY "logros_admin_write" ON app.logros
-  FOR ALL TO authenticated
+CREATE POLICY "logros_admin_insert" ON app.logros
+  FOR INSERT TO authenticated
+  WITH CHECK (app.is_super_admin());
+CREATE POLICY "logros_admin_update" ON app.logros
+  FOR UPDATE TO authenticated
   USING (app.is_super_admin()) WITH CHECK (app.is_super_admin());
+CREATE POLICY "logros_admin_delete" ON app.logros
+  FOR DELETE TO authenticated
+  USING (app.is_super_admin());
 
 -- app.pacientes
 CREATE POLICY "pacientes_all_own_or_admin" ON app.pacientes

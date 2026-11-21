@@ -21,12 +21,17 @@ UPDATE app.pacientes SET creado_por = (SELECT id_docente FROM app.docentes ORDER
 DO $$
 DECLARE t text;
 BEGIN
-  FOR t IN SELECT unnest(ARRAY['pacientes','materias','preguntas','respuestas','intentos','intento_detalles','dibujos','logros','paciente_logros','docentes']) LOOP
+  FOR t IN SELECT unnest(ARRAY['pacientes','materias','preguntas','respuestas','intentos','intento_detalles','dibujos','logros','docentes']) LOOP
     EXECUTE format('UPDATE app.%I SET fecha_creacion = now() WHERE fecha_creacion IS NULL', t);
     EXECUTE format('ALTER TABLE app.%I ALTER COLUMN fecha_creacion SET DEFAULT now()', t);
     EXECUTE format('ALTER TABLE app.%I ALTER COLUMN fecha_creacion SET NOT NULL', t);
   END LOOP;
 END $$;
+
+-- 3b. fecha_obtencion en paciente_logros
+UPDATE app.paciente_logros SET fecha_obtencion = now() WHERE fecha_obtencion IS NULL;
+ALTER TABLE app.paciente_logros ALTER COLUMN fecha_obtencion SET DEFAULT now();
+ALTER TABLE app.paciente_logros ALTER COLUMN fecha_obtencion SET NOT NULL;
 
 -- 4. CHECK ciclo en preguntas e intentos
 DO $$
@@ -84,13 +89,22 @@ CROSS JOIN app.cycles c
 CROSS JOIN (SELECT 1 AS l UNION ALL SELECT 2 UNION ALL SELECT 3) ls
 ON CONFLICT DO NOTHING;
 
+-- Grants explicitos para levels (creada despues de 001)
+GRANT SELECT, INSERT, UPDATE, DELETE ON app.levels TO authenticated;
+GRANT USAGE, SELECT ON SEQUENCE app.levels_id_seq TO authenticated;
+
 -- RLS para levels (lectura authenticated)
 ALTER TABLE app.levels ENABLE ROW LEVEL SECURITY;
 -- politicas ya creadas en migracion 002; recrear por seguridad
 DROP POLICY IF EXISTS "levels_select_all" ON app.levels;
 DROP POLICY IF EXISTS "levels_admin_write" ON app.levels;
+DROP POLICY IF EXISTS "levels_admin_insert" ON app.levels;
+DROP POLICY IF EXISTS "levels_admin_update" ON app.levels;
+DROP POLICY IF EXISTS "levels_admin_delete" ON app.levels;
 CREATE POLICY "levels_select_all" ON app.levels FOR SELECT TO authenticated USING (true);
-CREATE POLICY "levels_admin_write" ON app.levels FOR ALL TO authenticated USING (app.is_super_admin()) WITH CHECK (app.is_super_admin());
+CREATE POLICY "levels_admin_insert" ON app.levels FOR INSERT TO authenticated WITH CHECK (app.is_super_admin());
+CREATE POLICY "levels_admin_update" ON app.levels FOR UPDATE TO authenticated USING (app.is_super_admin()) WITH CHECK (app.is_super_admin());
+CREATE POLICY "levels_admin_delete" ON app.levels FOR DELETE TO authenticated USING (app.is_super_admin());
 
 -- 9. Indices de FKs (15) + compuesto preguntas
 CREATE INDEX IF NOT EXISTS idx_dibujos_id_paciente ON app.dibujos (id_paciente);

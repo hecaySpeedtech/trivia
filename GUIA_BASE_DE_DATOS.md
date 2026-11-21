@@ -1,6 +1,14 @@
 # Guía de Base de Datos y Auditoría Técnica — `trivia-educativa-v6`
 
-> **Actualización 2026-11-20:** Las migraciones de blindaje (001 docentes/roles, 002 RLS multi-docente, 003 esquema/índices) están versionadas en `supabase/migrations/` y consolidadas en `supabase/APLICAR_TODO_EN_SUPABASE.sql`. El MCP de este entorno es de solo lectura, por lo que deben aplicarse desde el SQL Editor de Supabase. Tras aplicarlas, ejecutar `get_advisors('security')` y `get_advisors('performance')` para verificar. La guía siguiente describe el estado original auditado.
+> **Actualización 2026-11-21 (verificado en producción):** Las migraciones de blindaje (001 docentes/roles, 002 RLS multi-docente, 003 esquema/índices, 004 fix multiple permissive policies) están versionadas en `supabase/migrations/` y consolidadas en `supabase/APLICAR_TODO_EN_SUPABASE.sql`. Aplicadas vía SQL Editor con éxito.
+>
+> **Conteos verificados (COUNT(*) real):** app.ajustes=1, cycles=2, dibujos=3, docentes=13, estado_unidades=6, intento_detalles=0, intentos=15, levels=18 (0 FK inválidas a materias), logros=3, materias=3, paciente_logros=5, pacientes=3, preguntas=121, respuestas=484, auth.users=13.
+>
+> **Advisors (security) DESPUÉS:** eliminados `rls_enabled_no_policy` (0), `anon_security_definer_function_executable` (0), `pg_graphql_anon_table_exposed` (0). Restantes por diseño: `pg_graphql_authenticated_table_exposed` (14, authenticated requiere SELECT), `authenticated_security_definer_function_executable` (1, is_super_admin intencional), `auth_leaked_password_protection` (1, función paga Pro, no activada). `multiple_permissive_policies` (3) se elimina aplicando `004_fix_multiple_permissive_policies.sql` (incluido en el consolidado).
+>
+> **Advisors (performance) DESPUÉS:** eliminado `unindexed_foreign_keys` (0). Restantes: `unused_index` (16, INFO, BD recién migrada sin tráfico) y `multiple_permissive_policies` (3, se elimina con 004).
+>
+> La guía siguiente describe el estado original auditado.
 
 > Documento generado íntegramente a partir de consultas reales ejecutadas contra el proyecto Supabase `gddpceumixxwrbejgotd` a través del MCP oficial en **modo solo lectura** (`read_only=true`). No se ejecutó ningún `INSERT`, `UPDATE`, `DELETE`, `ALTER`, `DROP` ni otra sentencia de escritura. No se modificó ningún archivo de código fuente.
 >
