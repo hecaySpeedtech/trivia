@@ -1,15 +1,20 @@
 # Guía de Arquitectura — Trivia Educativa Hospitalaria (React + Supabase)
 
-## 1. Stack real
+## 1. Resumen del sistema
 
-- **Frontend:** React 18.3.1 + Vite 7.3.1 + React Router 6.28
-- **Estilos:** Tailwind CSS 3 (PostCSS + Autoprefixer)
-- **Gráficos:** chart.js 4.5.1 (empaquetado local, sin CDN)
-- **Confetti:** canvas-confetti 1.9.3 (local)
-- **Iconos:** lucide-react 0.468.0
-- **Backend:** Supabase (PostgreSQL, Auth, RLS) — esquema `app`
-- **Multimedia:** Cloudinary (upload unsigned)
-- **Despliegue:** Vercel (SPA rewrite a `index.html`)
+Aplicación web educativa para la modalidad hospitalaria y domiciliaria. Permite a docentes gestionar alumnos, materias, preguntas y configuración, y a los alumnos jugar partidas cortas con retroalimentación, ver resultados, consultar historial y dibujar en una zona de contención socioafectiva. Funciona offline encolando intentos y dibujos.
+
+## 2. Stack real final
+
+- Frontend: React 18.3.1 + Vite 7.3.1 + React Router 6.28
+- Estilos: Tailwind CSS 3 (PostCSS + Autoprefixer)
+- Gráficos: chart.js 4.5.1 (empaquetado local, sin CDN)
+- Confetti: canvas-confetti 1.9.3 (local)
+- Iconos: lucide-react 0.468.0
+- Backend: Supabase (PostgreSQL, Auth, RLS) — esquema `app`
+- Multimedia: Cloudinary (upload unsigned)
+- Pruebas: Vitest + jsdom
+- Despliegue: Vercel (SPA rewrite a `index.html`)
 
 ### Comandos
 
@@ -18,6 +23,7 @@ npm install
 npm run dev      # desarrollo
 npm run build    # producción (exit 0 requerido)
 npm run preview  # previsualización
+npm run test     # suite de pruebas (Vitest)
 ```
 
 ### Variables de entorno (`.env`)
@@ -27,66 +33,91 @@ VITE_SUPABASE_URL=https://<project>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-key>
 VITE_CLOUDINARY_CLOUD_NAME=<cloud-name>
 VITE_CLOUDINARY_UPLOAD_PRESET=<preset>
+VITE_SUPER_ADMIN_EMAIL=admin@trivia.com
 ```
 
-## 2. Árbol real de archivos
+Nunca commitear `.env` ni `opencode.json` (están en `.gitignore`).
+
+## 3. Árbol completo de archivos
 
 ```
-src/
-  main.jsx
-  App.jsx
-  controllers/
-    AuthContext.jsx
-    SessionContext.jsx
-    OfflineContext.jsx
-    useGameController.js
-    useCanvasController.js
-  models/
-    supabaseClient.js
-    authService.js
-    patientsService.js
-    subjectsService.js
-    questionsService.js
-    settingsService.js
-    gameService.js
-    drawingsService.js
-    cloudinaryService.js
-    offlineSyncService.js
-    loggerService.js
-  utils/
-    shuffle.js
-    feedbackMessages.js
-    csvExport.js
-  views/
-    components/
-      ErrorBoundary.jsx
-      DoughnutChart.jsx
-      Modal.jsx
-      OfflineBanner.jsx
-      ReAuthModal.jsx
-      RouteGuards.jsx
-      StudentLayout.jsx
-      TeacherLayout.jsx
-    pages/
-      LoginPage.jsx
-      DashboardPage.jsx
-      PatientsPage.jsx
-      ProfileSelectPage.jsx
-      StudentHubPage.jsx
-      SubjectSelectPage.jsx
-      GamePage.jsx
-      ResultsPage.jsx
-      RecreationZonePage.jsx
-      PatientHistoryPage.jsx
-      SubjectManagerPage.jsx
-      QuestionManagerPage.jsx
-      QuestionFormPage.jsx
-      SettingsPage.jsx
-      TeacherManagerPage.jsx
-  styles/index.css
+.
+├── index.html
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+├── postcss.config.js
+├── vercel.json
+├── .env.example
+├── supabase/
+│   ├── APLICAR_TODO_EN_SUPABASE.sql
+│   └── migrations/
+│       ├── 001_docentes_roles_y_permisos.sql
+│       ├── 002_rls_aislamiento_multidocente.sql
+│       ├── 003_esquema_tesis_e_indices.sql
+│       ├── 004_fix_multiple_permissive_policies.sql
+│       └── 005_cierre_advisors_final.sql
+├── src/
+│   ├── main.jsx
+│   ├── App.jsx
+│   ├── controllers/
+│   │   ├── AuthContext.jsx
+│   │   ├── SessionContext.jsx
+│   │   ├── OfflineContext.jsx
+│   │   ├── useGameController.js
+│   │   └── useCanvasController.js
+│   ├── models/
+│   │   ├── supabaseClient.js
+│   │   ├── authService.js
+│   │   ├── patientsService.js
+│   │   ├── subjectsService.js
+│   │   ├── questionsService.js
+│   │   ├── settingsService.js
+│   │   ├── gameService.js
+│   │   ├── drawingsService.js
+│   │   ├── cloudinaryService.js
+│   │   ├── offlineSyncService.js
+│   │   └── loggerService.js
+│   ├── utils/
+│   │   ├── shuffle.js
+│   │   ├── feedbackMessages.js
+│   │   └── csvExport.js
+│   ├── views/
+│   │   ├── components/
+│   │   │   ├── ErrorBoundary.jsx
+│   │   │   ├── DoughnutChart.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── OfflineBanner.jsx
+│   │   │   ├── ReAuthModal.jsx
+│   │   │   ├── RouteGuards.jsx
+│   │   │   ├── StudentLayout.jsx
+│   │   │   └── TeacherLayout.jsx
+│   │   └── pages/
+│   │       ├── LoginPage.jsx
+│   │       ├── DashboardPage.jsx
+│   │       ├── PatientsPage.jsx
+│   │       ├── ProfileSelectPage.jsx
+│   │       ├── StudentHubPage.jsx
+│   │       ├── SubjectSelectPage.jsx
+│   │       ├── GamePage.jsx
+│   │       ├── ResultsPage.jsx
+│   │       ├── RecreationZonePage.jsx
+│   │       ├── PatientHistoryPage.jsx
+│   │       ├── SubjectManagerPage.jsx
+│   │       ├── QuestionManagerPage.jsx
+│   │       ├── QuestionFormPage.jsx
+│   │       ├── SettingsPage.jsx
+│   │       └── TeacherManagerPage.jsx
+│   ├── styles/index.css
+│   └── test/
+│       ├── setup.js
+│       ├── utils.test.js
+│       ├── storage.test.jsx
+│       └── gameController.test.js
+└── docs...
 ```
 
-## 3. Diagrama de arquitectura MVC (Mermaid)
+## 4. Patrón MVC adaptado a componentes
 
 ```mermaid
 flowchart TD
@@ -100,8 +131,14 @@ flowchart TD
   V --> RB[ErrorBoundary + loggerService]
 ```
 
-## 4. Flujo Modo Docente
+- `src/models/`: acceso a datos y servicios externos (Supabase, Cloudinary).
+- `src/controllers/`: estado y lógica de negocio (Contexts, hooks).
+- `src/views/`: componentes y páginas (UI).
+- `src/utils/`: utilidades puras (shuffle, CSV, mensajes).
 
+## 5. Flujos principales
+
+### Modo Docente
 1. `LoginPage.jsx` → `authService.login` → Supabase Auth.
 2. `AuthContext.jsx` carga perfil real desde `app.docentes` (`rol`).
 3. Rutas protegidas por `RequireAuth` (`RouteGuards.jsx`).
@@ -110,13 +147,12 @@ flowchart TD
 6. Dashboard muestra métricas propias (docente) o globales (super_admin).
 7. CRUD: alumnos, materias, preguntas, ajustes, docentes (solo super_admin).
 
-## 5. Flujo Modo Alumno (encierro + offline)
-
+### Modo Alumno (encierro + offline)
 1. `/profiles` activa `studentModeLocked = true` (`ProfileSelectPage.jsx`).
 2. Alumno elige perfil → `activePatient` persistido en `localStorage` (`SessionContext.jsx`).
 3. Juego: `SubjectSelectPage.jsx` → `GamePage.jsx`.
    - `useGameController.js` mezcla preguntas y opciones (Fisher-Yates).
-   - `max_preguntas` desde `app.ajustes` (default 5).
+   - `max_preguntas` desde `app.ajustes` (default 5, rango 3–20).
    - Retroalimentación visual + mensaje cálido.
 4. Resultados: `ResultsPage.jsx` → confetti local → guarda `app.intentos` + `app.intento_detalles` + logros.
 5. Dibujo: `RecreationZonePage.jsx` → Cloudinary → `app.dibujos.imagen_url` + logro.
@@ -139,7 +175,7 @@ flowchart TD
 | RF10 | Depuración responsable | ✅ Cumplido | `PatientsPage.jsx`, `PatientHistoryPage.jsx` (eliminación con `Modal`) |
 | RF11 | Gestión autónoma de contenidos | ✅ Cumplido | `SubjectManagerPage.jsx`, `QuestionManagerPage.jsx`, `QuestionFormPage.jsx`, `SettingsPage.jsx` |
 | RF12 | Mitigación de interrupciones | ✅ Cumplido | `SessionContext.jsx` (`activeGame`), `GamePage.jsx` (pausa/retorno), `StudentHubPage.jsx` (Continuar partida) |
-| RF13 | Reportes de acompañamiento | ✅ Cumplido | `DashboardPage.jsx`, `PatientHistoryPage.jsx`, `utils/csvExport.js` (BOM + escape) |
+| RF13 | Reportes de acompañamiento | ✅ Cumplido | `DashboardPage.jsx`, `PatientHistoryPage.jsx`, `utils/csvExport.js` (BOM + escape + anti-inyección) |
 | RF14 | Zona de contención socioafectiva | ✅ Cumplido | `RecreationZonePage.jsx`, `useCanvasController.js`, logro "Pequeño Artista", encierro a `/student-hub` |
 | RNF01 | Usabilidad | ✅ Cumplido | `StudentLayout.jsx`, `TeacherLayout.jsx` |
 | RNF02 | Accesibilidad contextual | ✅ Cumplido | `GamePage.jsx` (color + ícono), canvas `touch-action: none`, `lang="es"` en `index.html` |

@@ -31,19 +31,33 @@ export default function PatientsPage() {
     if (r.ok) { setName(""); load(); }
   };
 
+  const [savingEdit, setSavingEdit] = useState(false);
   const saveEdit = async (id) => {
-    if (!editingName.trim()) return;
+    if (!editingName.trim() || savingEdit) return;
+    setSavingEdit(true);
     await updatePatient(id, { nombre: editingName.trim() });
+    setSavingEdit(false);
     setEditingId(null);
     setEditingName("");
     load();
   };
 
   const onAvatar = async (patientId, file) => {
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      alert("Solo se permiten imágenes JPG, PNG o WEBP.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("La imagen no puede superar los 5 MB.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = async () => {
       const up = await uploadImageToCloudinary(reader.result);
       if (up.ok) { await updatePatientAvatar(patientId, up.url); load(); }
+      else alert(up.error || "No se pudo subir la imagen");
     };
     reader.readAsDataURL(file);
   };
@@ -58,7 +72,7 @@ export default function PatientsPage() {
     <TeacherLayout>
       <h1 className="text-2xl font-bold mb-4">Alumnos</h1>
       <form onSubmit={add} className="flex gap-2 mb-4">
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre del alumno" className="border rounded px-3 py-2 flex-1" />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre del alumno" maxLength={100} className="border rounded px-3 py-2 flex-1" />
         <button disabled={loading} className="bg-primary text-white px-4 py-2 rounded">{loading ? "..." : "Agregar"}</button>
       </form>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -69,7 +83,7 @@ export default function PatientsPage() {
               {editingId === p.id ? (
                 <div className="flex gap-2 mb-1">
                   <input value={editingName} onChange={(e) => setEditingName(e.target.value)} className="border rounded px-2 py-1 flex-1" />
-                  <button onClick={() => saveEdit(p.id)} className="text-xs bg-primary text-white px-2 py-1 rounded">OK</button>
+                  <button onClick={() => saveEdit(p.id)} disabled={savingEdit} className="text-xs bg-primary text-white px-2 py-1 rounded">{savingEdit ? "..." : "OK"}</button>
                   <button onClick={() => { setEditingId(null); setEditingName(""); }} className="text-xs bg-gray-200 px-2 py-1 rounded">X</button>
                 </div>
               ) : (

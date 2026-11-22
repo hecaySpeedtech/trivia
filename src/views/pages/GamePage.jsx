@@ -28,7 +28,7 @@ export default function GamePage() {
     if (!patient || !subject || !cycle) { navigate("/subjects"); return; }
 
     (async () => {
-      // resume from persisted game
+
       const saved = session.activeGame;
       if (saved && saved.subject?.id === subject.id && saved.cycle === cycle) {
         gc.restore(saved);
@@ -63,7 +63,7 @@ export default function GamePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // persist progress whenever index/score/questions change
+
   useEffect(() => {
     if (!gc.questions || !gc.questions.length) return;
     const subject = session.activeSubject;
@@ -93,7 +93,7 @@ export default function GamePage() {
     questionStart.current = Date.now();
     if (gc.index + 1 >= gc.questions.length) {
       const finalScore = gc.score;
-      // save (offline-aware)
+
       const doSave = async () => {
         const payload = {
           patientId: session.activePatient.id,

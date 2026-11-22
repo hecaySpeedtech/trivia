@@ -6,6 +6,12 @@ import { getSettings, saveSettings, getEstadoUnidades, toggleUnidad } from "../.
 export default function SettingsPage() {
   const { user } = useAuth();
   const [maxP, setMaxP] = useState(5);
+
+  const sanitizeMax = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return 5;
+    return Math.min(20, Math.max(3, Math.round(n)));
+  };
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -21,8 +27,10 @@ export default function SettingsPage() {
 
   const save = async () => {
     if (!user) return;
+    const safe = sanitizeMax(maxP);
+    setMaxP(safe);
     setLoading(true);
-    await saveSettings(user.id, maxP);
+    await saveSettings(user.id, safe);
     setLoading(false);
     alert("Guardado");
   };
@@ -38,7 +46,7 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-bold mb-4">Ajustes</h1>
       <div className="bg-white p-4 rounded shadow mb-4">
         <label className="block mb-2 font-medium">Máximo de preguntas por partida</label>
-        <input type="number" value={maxP} onChange={(e) => setMaxP(Number(e.target.value))} className="border rounded px-3 py-2" />
+        <input type="number" min={3} max={20} value={maxP} onChange={(e) => setMaxP(sanitizeMax(e.target.value))} className="border rounded px-3 py-2" />
         <button onClick={save} disabled={loading} className="ml-2 bg-primary text-white px-4 py-2 rounded">{loading ? "..." : "Guardar"}</button>
       </div>
       <div className="bg-white p-4 rounded shadow">

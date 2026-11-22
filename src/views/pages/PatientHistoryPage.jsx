@@ -8,7 +8,6 @@ import { getPatientDrawings, deleteDrawing } from "../../models/drawingsService.
 import { toCSV, downloadCSV } from "../../utils/csvExport.js";
 import Modal from "../components/Modal.jsx";
 
-// inline achievements service
 import { supabase } from "../../models/supabaseClient.js";
 async function getPatientAchievementsFn(patientId) {
   const { data, error } = await supabase.from("paciente_logros").select("fecha_obtencion, logros(nombre, descripcion, imagen_url)").eq("id_paciente", patientId).order("fecha_obtencion", { ascending: false });

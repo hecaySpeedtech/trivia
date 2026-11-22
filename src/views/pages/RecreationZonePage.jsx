@@ -25,7 +25,6 @@ export default function RecreationZonePage() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }, []);
 
-  // wire events
   useEffect(() => {
     const canvas = c.canvasRef.current;
     if (!canvas) return;
@@ -51,6 +50,14 @@ export default function RecreationZonePage() {
   }, [c]);
 
   const save = async () => {
+    if (saving) return;
+    const canvas = c.canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      const blank = data.every((v, i) => i % 4 === 3 ? v === 255 : v === 255);
+      if (blank) { alert("Dibujá algo antes de guardar."); return; }
+    }
     setSaving(true);
     const png = c.exportPNG();
     const up = await uploadImageToCloudinary(png);
@@ -62,7 +69,7 @@ export default function RecreationZonePage() {
         return;
       }
       await saveDrawingUrl(session.activePatient.id, up.url);
-      // award achievement
+
       const { data: logro } = await supabase.from("logros").select("id_logro").eq("nombre", "Pequeño Artista").maybeSingle();
       if (logro) {
         const { data: ex } = await supabase.from("paciente_logros").select("id_paciente_logro").eq("id_paciente", session.activePatient.id).eq("id_logro", logro.id_logro);

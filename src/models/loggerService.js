@@ -2,9 +2,20 @@ const BUFFER_KEY = "trivia_logs";
 const MAX = 200;
 
 function load() {
-  try { return JSON.parse(localStorage.getItem(BUFFER_KEY) || "[]"); } catch { return []; }
+  try {
+    const raw = localStorage.getItem(BUFFER_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch {
+    try { localStorage.removeItem(BUFFER_KEY); } catch {}
+    return [];
+  }
 }
-function save(b) { localStorage.setItem(BUFFER_KEY, JSON.stringify(b.slice(-MAX))); }
+function save(b) {
+  try { localStorage.setItem(BUFFER_KEY, JSON.stringify((b || []).slice(-MAX))); } catch {}
+}
 
 export const logger = {
   log(level, message, meta) {

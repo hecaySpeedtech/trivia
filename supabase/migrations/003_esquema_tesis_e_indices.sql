@@ -1,7 +1,7 @@
 -- 003_esquema_tesis_e_indices.sql
 -- Esquema alineado a la tesis, integridad e indices.
 
--- 1. RF02: pacientes.dni nullable
+-- 1. pacientes.dni nullable para identificacion pedagogica
 ALTER TABLE app.pacientes ALTER COLUMN dni DROP NOT NULL;
 UPDATE app.pacientes SET dni = NULL; -- sanea DNIs falsos aleatorios
 

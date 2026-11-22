@@ -32,13 +32,20 @@ export async function getQuestionsForGame(subjectId, cycle, maxQuestions, enable
   return _ok(valid);
 }
 
+function safeMediaUrl(url) {
+  if (!url) return null;
+  const s = String(url).trim();
+  if (!s) return null;
+  return /^https?:\/\//i.test(s) ? s : null;
+}
+
 export async function createQuestionWithAnswers(subjectId, questionText, cycle, answers, unit, mediaUrl, mediaType) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return _fail({ message: "No hay sesión activa." });
   const { data: qData, error: qError } = await supabase.from("preguntas").insert([{
     id_materia: subjectId, texto_pregunta: questionText, ciclo: cycle,
     creado_por: session.user.id, unidad: unit || null,
-    media_url: mediaUrl || null, media_type: mediaType || "none",
+    media_url: safeMediaUrl(mediaUrl), media_type: mediaType || "none",
   }]).select().single();
   if (qError) return _fail(qError);
   const answersToInsert = answers.map((ans) => ({
@@ -60,7 +67,7 @@ export async function updateQuestion(questionId, patch) {
 export async function updateQuestionWithAnswers(questionId, subjectId, questionText, cycle, answers, unit, mediaUrl, mediaType) {
   const { error: qError } = await supabase.from("preguntas").update({
     id_materia: subjectId, texto_pregunta: questionText, ciclo: cycle,
-    unidad: unit || null, media_url: mediaUrl || null, media_type: mediaType || "none",
+    unidad: unit || null, media_url: safeMediaUrl(mediaUrl), media_type: mediaType || "none",
   }).eq("id_pregunta", questionId);
   if (qError) return _fail(qError);
   await supabase.from("respuestas").delete().eq("id_pregunta", questionId);

@@ -10,6 +10,9 @@ export default function ResultsPage() {
   const session = useSession();
   const subject = session.activeSubject;
   const cycle = session.activeCycle;
+  useEffect(() => {
+    if (!session.lastScore) navigate("/student-hub", { replace: true });
+  }, [session.lastScore, navigate]);
   // score is passed via session? We'll read from a saved field; fallback 0
   const [score] = useState(session.lastScore || { correct: 0, incorrect: 0 });
   const total = score.correct + score.incorrect;

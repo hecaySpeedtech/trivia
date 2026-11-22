@@ -1,12 +1,15 @@
 export function toCSV(rows, headers) {
   const escape = (v) => {
-    const s = String(v ?? "");
-    if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    let s = String(v ?? "");
+    // Neutralizar inyeccion de formulas en Excel/Sheets
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    // Escapar comillas, comas y saltos de linea
+    if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
     return s;
   };
   const lines = [headers.map(escape).join(",")];
   for (const r of rows) lines.push(headers.map((h) => escape(r[h])).join(","));
-  return "\uFEFF" + lines.join("\n");
+  return "\uFEFF" + lines.join("\r\n");
 }
 
 export function downloadCSV(filename, csv) {

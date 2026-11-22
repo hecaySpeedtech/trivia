@@ -30,6 +30,7 @@ export default function QuestionFormPage() {
         const r = await getAllQuestions();
         if (r.ok) {
           const q = r.data.find((x) => x.id === id);
+          if (!q) { navigate("/questions"); return; }
           if (q) {
             setText(q.text); setCycle(q.cycle); setUnit(q.unit || "");
             setMediaUrl(q.mediaUrl || ""); setMediaType(q.mediaType || "none");
@@ -47,10 +48,15 @@ export default function QuestionFormPage() {
   }, [id]);
 
   const onMediaFile = async (file) => {
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) { alert("Solo imágenes JPG, PNG o WEBP."); return; }
+    if (file.size > 5 * 1024 * 1024) { alert("La imagen no puede superar los 5 MB."); return; }
     const reader = new FileReader();
     reader.onload = async () => {
       const up = await uploadImageToCloudinary(reader.result);
       if (up.ok) { setMediaUrl(up.url); setMediaType("image"); }
+      else alert(up.error || "No se pudo subir la imagen");
     };
     reader.readAsDataURL(file);
   };
@@ -58,8 +64,19 @@ export default function QuestionFormPage() {
   const submit = async (e) => {
     e.preventDefault();
     if (!subjectId || !text.trim()) return;
+    if (mediaType !== "none" && mediaUrl.trim()) {
+      if (!/^https?:\/\//i.test(mediaUrl.trim())) {
+        alert("La URL de media debe comenzar con http:// o https://");
+        return;
+      }
+    }
+    // validar respuestas
+    const cleaned = answers.map((a) => a.trim());
+    if (cleaned.some((a) => !a)) { alert("Todas las respuestas deben tener texto."); return; }
+    if (new Set(cleaned).size !== cleaned.length) { alert("Las respuestas no pueden repetirse."); return; }
+    if (!cleaned[correctIndex]) { alert("Marcá una respuesta correcta."); return; }
     setLoading(true);
-    const ans = answers.map((t, i) => ({ text: t, isCorrect: i === correctIndex }));
+    const ans = answers.map((t, i) => ({ text: t.trim(), isCorrect: i === correctIndex }));
     let r;
     if (editing) {
       r = await updateQuestionWithAnswers(id, subjectId, text.trim(), cycle, ans, unit, mediaUrl, mediaType);
