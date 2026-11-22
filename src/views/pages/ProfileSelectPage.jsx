@@ -10,6 +10,7 @@ export default function ProfileSelectPage() {
   const [patients, setPatients] = useState([]);
   const [reauth, setReauth] = useState(false);
 
+  useEffect(() => { session.update({ studentModeLocked: true }); }, []);
   useEffect(() => { (async () => { const r = await getPatientsList(); if (r.ok) setPatients(r.data); })(); }, []);
 
   const pick = (p) => {

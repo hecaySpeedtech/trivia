@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import TeacherLayout from "../components/TeacherLayout.jsx";
 import { getSubjectsList } from "../../models/subjectsService.js";
-import { getAllQuestions } from "../../models/questionsService.js";
-import { createQuestionWithAnswers } from "../../models/questionsService.js";
+import { getAllQuestions, createQuestionWithAnswers, updateQuestionWithAnswers } from "../../models/questionsService.js";
+import { uploadImageToCloudinary } from "../../models/cloudinaryService.js";
 import Modal from "../components/Modal.jsx";
 
 export default function QuestionFormPage() {
@@ -17,6 +17,8 @@ export default function QuestionFormPage() {
   const [unit, setUnit] = useState("");
   const [answers, setAnswers] = useState(["", "", "", ""]);
   const [correctIndex, setCorrectIndex] = useState(0);
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaType, setMediaType] = useState("none");
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState({ open: false, title: "", message: "", onConfirm: null });
 
@@ -30,23 +32,40 @@ export default function QuestionFormPage() {
           const q = r.data.find((x) => x.id === id);
           if (q) {
             setText(q.text); setCycle(q.cycle); setUnit(q.unit || "");
+            setMediaUrl(q.mediaUrl || ""); setMediaType(q.mediaType || "none");
             const subj = s.data?.find((x) => x.name === q.subjectName);
             if (subj) setSubjectId(subj.id);
             const corr = q.answers.findIndex((a) => a.isCorrect);
             setCorrectIndex(corr >= 0 ? corr : 0);
-            setAnswers(q.answers.map((a) => a.text));
+            const ans = q.answers.map((a) => a.text);
+            while (ans.length < 4) ans.push("");
+            setAnswers(ans.slice(0, 4));
           }
         }
       }
     })();
   }, [id]);
 
+  const onMediaFile = async (file) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const up = await uploadImageToCloudinary(reader.result);
+      if (up.ok) { setMediaUrl(up.url); setMediaType("image"); }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     if (!subjectId || !text.trim()) return;
     setLoading(true);
     const ans = answers.map((t, i) => ({ text: t, isCorrect: i === correctIndex }));
-    const r = await createQuestionWithAnswers(subjectId, text.trim(), cycle, ans, unit);
+    let r;
+    if (editing) {
+      r = await updateQuestionWithAnswers(id, subjectId, text.trim(), cycle, ans, unit, mediaUrl, mediaType);
+    } else {
+      r = await createQuestionWithAnswers(subjectId, text.trim(), cycle, ans, unit, mediaUrl, mediaType);
+    }
     setLoading(false);
     if (r.ok) {
       setModal({ open: true, title: "OK", message: "Pregunta guardada", onConfirm: () => { setModal({ open: false }); navigate("/questions"); } });
@@ -75,6 +94,19 @@ export default function QuestionFormPage() {
             <input value={a} onChange={(e) => { const c = [...answers]; c[i] = e.target.value; setAnswers(c); }} placeholder={`Respuesta ${i + 1}`} className="flex-1 border rounded px-3 py-2" />
           </div>
         ))}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Multimedia (opcional)</label>
+          <select value={mediaType} onChange={(e) => setMediaType(e.target.value)} className="border rounded px-3 py-2">
+            <option value="none">Ninguna</option>
+            <option value="image">Imagen</option>
+            <option value="audio">Audio</option>
+            <option value="video">Video</option>
+          </select>
+          <input value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="URL de media" className="w-full border rounded px-3 py-2" />
+          <label className="text-xs bg-gray-200 px-2 py-1 rounded cursor-pointer inline-block">
+            Subir imagen <input type="file" accept="image/*" hidden onChange={(e) => e.target.files[0] && onMediaFile(e.target.files[0])} />
+          </label>
+        </div>
         <button disabled={loading} className="bg-primary text-white px-4 py-2 rounded">{loading ? "Guardando..." : "Guardar"}</button>
       </form>
       <Modal open={modal.open} title={modal.title} message={modal.message} onConfirm={modal.onConfirm} />

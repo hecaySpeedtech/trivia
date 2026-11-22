@@ -448,3 +448,69 @@ DROP POLICY IF EXISTS "logros_admin_delete" ON app.logros;
 CREATE POLICY "logros_admin_insert" ON app.logros FOR INSERT TO authenticated WITH CHECK (app.is_super_admin());
 CREATE POLICY "logros_admin_update" ON app.logros FOR UPDATE TO authenticated USING (app.is_super_admin()) WITH CHECK (app.is_super_admin());
 CREATE POLICY "logros_admin_delete" ON app.logros FOR DELETE TO authenticated USING (app.is_super_admin());
+
+-- 005_cierre_advisors_final.sql
+-- Cierre final de advisors de seguridad y performance (idempotente).
+
+BEGIN;
+
+DROP POLICY IF EXISTS "cycles_write_admin" ON app.cycles;
+DROP POLICY IF EXISTS "levels_write_admin" ON app.levels;
+DROP POLICY IF EXISTS "logros_write_admin" ON app.logros;
+
+CREATE SCHEMA IF NOT EXISTS private;
+
+CREATE OR REPLACE FUNCTION private.is_super_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path TO 'app', 'public'
+AS $$
+  SELECT EXISTS (SELECT 1 FROM app.docentes WHERE id_docente = auth.uid() AND rol = 'super_admin');
+$$;
+
+REVOKE ALL ON SCHEMA private FROM PUBLIC, anon;
+GRANT USAGE ON SCHEMA private TO authenticated, service_role;
+
+REVOKE ALL ON FUNCTION private.is_super_admin() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.is_super_admin() TO authenticated, service_role;
+
+DO $$
+DECLARE
+  r record;
+  roles_sql text;
+  stmt text;
+BEGIN
+  FOR r IN
+    SELECT schemaname, tablename, policyname, cmd, roles, qual, with_check
+    FROM pg_policies
+    WHERE schemaname = 'app'
+      AND (qual ILIKE '%app.is_super_admin()%' OR with_check ILIKE '%app.is_super_admin()%')
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON %I.%I', r.policyname, r.schemaname, r.tablename);
+
+    SELECT COALESCE(string_agg(quote_ident(x), ', '), 'authenticated') INTO roles_sql
+    FROM unnest(r.roles) AS x;
+
+    stmt := 'CREATE POLICY ' || quote_ident(r.policyname)
+         || ' ON ' || quote_ident(r.schemaname) || '.' || quote_ident(r.tablename)
+         || ' FOR ' || r.cmd
+         || ' TO ' || roles_sql;
+
+    IF r.qual IS NOT NULL THEN
+      stmt := stmt || ' USING (' || replace(r.qual, 'app.is_super_admin()', 'private.is_super_admin()') || ')';
+    END IF;
+    IF r.with_check IS NOT NULL THEN
+      stmt := stmt || ' WITH CHECK (' || replace(r.with_check, 'app.is_super_admin()', 'private.is_super_admin()') || ')';
+    END IF;
+
+    EXECUTE stmt;
+  END LOOP;
+END $$;
+
+DROP FUNCTION IF EXISTS app.is_super_admin();
+
+COMMIT;
+
+DROP EXTENSION IF EXISTS pg_graphql CASCADE;

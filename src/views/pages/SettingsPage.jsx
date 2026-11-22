@@ -5,7 +5,7 @@ import { getSettings, saveSettings, getEstadoUnidades, toggleUnidad } from "../.
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const [maxP, setMaxP] = useState(10);
+  const [maxP, setMaxP] = useState(5);
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -13,7 +13,7 @@ export default function SettingsPage() {
     if (!user) return;
     (async () => {
       const s = await getSettings(user.id);
-      if (s.ok && s.data) setMaxP(s.data.max_preguntas || 10);
+      if (s.ok && s.data) setMaxP(s.data.max_preguntas || 5);
       const u = await getEstadoUnidades(user.id);
       if (u.ok) setUnits(u.data);
     })();

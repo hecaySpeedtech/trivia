@@ -1,6 +1,8 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../controllers/AuthContext.jsx";
 import { useSession } from "../../controllers/SessionContext.jsx";
+import ReAuthModal from "./ReAuthModal.jsx";
 
 export function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -18,6 +20,25 @@ export function RequireSuperAdmin({ children }) {
 
 export function RequireTeacherMode({ children }) {
   const session = useSession();
-  if (!session.activePatient) return <Navigate to="/profiles" replace />;
-  return children;
+  const navigate = useNavigate();
+  const locked = !!session.studentModeLocked;
+  const [show, setShow] = useState(locked);
+
+  useEffect(() => {
+    if (locked) setShow(true);
+    else setShow(false);
+  }, [locked]);
+
+  if (!show) return children;
+
+  return (
+    <ReAuthModal
+      open={true}
+      onSuccess={() => {
+        session.update({ studentModeLocked: false, activePatient: null, activeGame: null });
+        setShow(false);
+      }}
+      onCancel={() => navigate("/profiles")}
+    />
+  );
 }

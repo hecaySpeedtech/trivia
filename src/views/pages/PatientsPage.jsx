@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "../../controllers/SessionContext.jsx";
 import TeacherLayout from "../components/TeacherLayout.jsx";
-import { getPatientsList, createPatient, updatePatientAvatar, deletePatient } from "../../models/patientsService.js";
+import { getPatientsList, createPatient, updatePatient, updatePatientAvatar, deletePatient } from "../../models/patientsService.js";
 import { uploadImageToCloudinary } from "../../models/cloudinaryService.js";
 import Modal from "../components/Modal.jsx";
 
@@ -13,6 +13,8 @@ export default function PatientsPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState({ open: false, title: "", message: "", onConfirm: null });
+  const [editingId, setEditingId] = useState(null);
+  const [editingName, setEditingName] = useState("");
 
   const load = async () => {
     const r = await getPatientsList();
@@ -27,6 +29,14 @@ export default function PatientsPage() {
     const r = await createPatient(name.trim());
     setLoading(false);
     if (r.ok) { setName(""); load(); }
+  };
+
+  const saveEdit = async (id) => {
+    if (!editingName.trim()) return;
+    await updatePatient(id, { nombre: editingName.trim() });
+    setEditingId(null);
+    setEditingName("");
+    load();
   };
 
   const onAvatar = async (patientId, file) => {
@@ -56,7 +66,15 @@ export default function PatientsPage() {
           <div key={p.id} className="bg-white p-3 rounded shadow flex items-center gap-3">
             <img src={p.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.id}`} alt="" className="w-12 h-12 rounded-full" />
             <div className="flex-1">
-              <div className="font-medium">{p.name}</div>
+              {editingId === p.id ? (
+                <div className="flex gap-2 mb-1">
+                  <input value={editingName} onChange={(e) => setEditingName(e.target.value)} className="border rounded px-2 py-1 flex-1" />
+                  <button onClick={() => saveEdit(p.id)} className="text-xs bg-primary text-white px-2 py-1 rounded">OK</button>
+                  <button onClick={() => { setEditingId(null); setEditingName(""); }} className="text-xs bg-gray-200 px-2 py-1 rounded">X</button>
+                </div>
+              ) : (
+                <div className="font-medium">{p.name}</div>
+              )}
               <div className="flex gap-2 mt-1 flex-wrap">
                 <button onClick={() => { session.update({ activePatient: { id: p.id, name: p.name, avatarUrl: p.avatar_url } }); navigate("/subjects"); }} className="text-xs bg-primary text-white px-2 py-1 rounded">Jugar</button>
                 <button onClick={() => { session.update({ activePatient: { id: p.id, name: p.name, avatarUrl: p.avatar_url } }); navigate("/history"); }} className="text-xs bg-gray-600 text-white px-2 py-1 rounded">Historial</button>
@@ -64,6 +82,7 @@ export default function PatientsPage() {
                 <label className="text-xs bg-gray-200 px-2 py-1 rounded cursor-pointer">
                   Foto <input type="file" accept="image/*" hidden onChange={(e) => e.target.files[0] && onAvatar(p.id, e.target.files[0])} />
                 </label>
+                <button onClick={() => { setEditingId(p.id); setEditingName(p.name); }} className="text-xs text-blue-600">Editar</button>
                 <button onClick={() => del(p.id)} className="text-xs text-accent">Eliminar</button>
               </div>
             </div>

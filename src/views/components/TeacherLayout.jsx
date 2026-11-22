@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import OfflineBanner from "./OfflineBanner.jsx";
 import { useAuth } from "../../controllers/AuthContext.jsx";
 import { LogOut, Users, BookOpen, HelpCircle, Settings, UserCog } from "lucide-react";
 
@@ -7,6 +8,7 @@ export default function TeacherLayout({ children }) {
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-bg">
+      <OfflineBanner />
       <header className="bg-white shadow px-4 py-3 flex items-center justify-between">
         <div className="font-bold text-primary">Trivia Educativa</div>
         <nav className="flex gap-4 text-sm">

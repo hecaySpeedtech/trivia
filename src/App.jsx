@@ -20,21 +20,21 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
-      <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
-      <Route path="/patients" element={<RequireAuth><PatientsPage /></RequireAuth>} />
+      <Route path="/dashboard" element={<RequireAuth><RequireTeacherMode><DashboardPage /></RequireTeacherMode></RequireAuth>} />
+      <Route path="/patients" element={<RequireAuth><RequireTeacherMode><PatientsPage /></RequireTeacherMode></RequireAuth>} />
       <Route path="/profiles" element={<RequireAuth><ProfileSelectPage /></RequireAuth>} />
       <Route path="/student-hub" element={<RequireAuth><StudentHubPage /></RequireAuth>} />
       <Route path="/subjects" element={<RequireAuth><SubjectSelectPage /></RequireAuth>} />
       <Route path="/game" element={<RequireAuth><GamePage /></RequireAuth>} />
       <Route path="/results" element={<RequireAuth><ResultsPage /></RequireAuth>} />
       <Route path="/recreation" element={<RequireAuth><RecreationZonePage /></RequireAuth>} />
-      <Route path="/history" element={<RequireAuth><PatientHistoryPage /></RequireAuth>} />
-      <Route path="/subject-manager" element={<RequireAuth><SubjectManagerPage /></RequireAuth>} />
-      <Route path="/questions" element={<RequireAuth><QuestionManagerPage /></RequireAuth>} />
-      <Route path="/question-form" element={<RequireAuth><QuestionFormPage /></RequireAuth>} />
-      <Route path="/question-form/:id" element={<RequireAuth><QuestionFormPage /></RequireAuth>} />
-      <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
-      <Route path="/teacher-manager" element={<RequireAuth><RequireSuperAdmin><TeacherManagerPage /></RequireSuperAdmin></RequireAuth>} />
+      <Route path="/history" element={<RequireAuth><RequireTeacherMode><PatientHistoryPage /></RequireTeacherMode></RequireAuth>} />
+      <Route path="/subject-manager" element={<RequireAuth><RequireTeacherMode><SubjectManagerPage /></RequireTeacherMode></RequireAuth>} />
+      <Route path="/questions" element={<RequireAuth><RequireTeacherMode><QuestionManagerPage /></RequireTeacherMode></RequireAuth>} />
+      <Route path="/question-form" element={<RequireAuth><RequireTeacherMode><QuestionFormPage /></RequireTeacherMode></RequireAuth>} />
+      <Route path="/question-form/:id" element={<RequireAuth><RequireTeacherMode><QuestionFormPage /></RequireTeacherMode></RequireAuth>} />
+      <Route path="/settings" element={<RequireAuth><RequireTeacherMode><SettingsPage /></RequireTeacherMode></RequireAuth>} />
+      <Route path="/teacher-manager" element={<RequireAuth><RequireSuperAdmin><RequireTeacherMode><TeacherManagerPage /></RequireTeacherMode></RequireSuperAdmin></RequireAuth>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

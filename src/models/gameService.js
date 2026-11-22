@@ -35,6 +35,22 @@ export async function getTeacherMetrics() {
   return _ok({ totalCorrect, totalIncorrect, totalAttempts: (data || []).length });
 }
 
+export async function getAttemptsForExport() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return _fail({ message: "No hay sesión activa." });
+  const { data: prof } = await supabase.from("docentes").select("rol").eq("id_docente", session.user.id).maybeSingle();
+  const isSuper = prof?.rol === "super_admin";
+  let q = supabase.from("intentos").select("id_intento, id_paciente, nombre_materia, ciclo, respuestas_correctas, respuestas_incorrectas, fecha_creacion, creado_por, pacientes(nombre)");
+  if (!isSuper) q = q.eq("creado_por", session.user.id);
+  const { data, error } = await q.order("fecha_creacion", { ascending: false });
+  if (error) return _fail(error);
+  return _ok((data || []).map((a) => ({
+    id: a.id_intento, patientId: a.id_paciente, patientName: a.pacientes?.nombre || "",
+    subject: a.nombre_materia, cycle: a.ciclo, correct: a.respuestas_correctas,
+    incorrect: a.respuestas_incorrectas, date: a.fecha_creacion,
+  })));
+}
+
 export async function getPatientHistory(patientId) {
   const { data, error } = await supabase.from("intentos").select("*").eq("id_paciente", patientId).order("fecha_creacion", { ascending: false });
   if (error) return _fail(error);

@@ -19,7 +19,7 @@ export function useGameController() {
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState({ correct: 0, incorrect: 0 });
-  const [maxPreguntas, setMaxPreguntas] = useState(10);
+  const [maxPreguntas, setMaxPreguntas] = useState(5);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [paused, setPaused] = useState(false);
@@ -27,9 +27,9 @@ export function useGameController() {
   const timerRef = useRef(null);
   const detailsRef = useRef([]);
 
-  const load = useCallback(async (subjectId, cycle, max) => {
+  const load = useCallback(async (subjectId, cycle, max, enabledUnits) => {
     setLoading(true); setError(null);
-    const r = await getQuestionsForGame(subjectId, cycle, max || maxPreguntas);
+    const r = await getQuestionsForGame(subjectId, cycle, max || maxPreguntas, enabledUnits);
     if (!r.ok) { setError(r.error?.message || "Error"); setLoading(false); return; }
     const shuffledQs = fisherYates(r.data).map((q) => ({ ...q, answers: fisherYates(q.answers) }));
     setQuestions(shuffledQs);
@@ -38,6 +38,17 @@ export function useGameController() {
     detailsRef.current = [];
     setLoading(false);
   }, [maxPreguntas]);
+
+  const restore = useCallback((saved) => {
+    if (!saved) return;
+    setMaxPreguntas(saved.maxPreguntas || 5);
+    setQuestions(saved.questions || []);
+    setIndex(saved.index || 0);
+    setScore(saved.score || { correct: 0, incorrect: 0 });
+    detailsRef.current = saved.details || [];
+    setLoading(false);
+    setError(null);
+  }, []);
 
   const answer = useCallback((chosen, timeSeconds) => {
     const q = questions[index];
@@ -69,7 +80,7 @@ export function useGameController() {
 
   return {
     questions, index, score, loading, error, paused, timeLeft,
-    load, answer, next, isFinished, save, pause, resume,
-    setMaxPreguntas, maxPreguntas, current: questions[index],
+    load, answer, next, isFinished, save, pause, resume, restore,
+    setMaxPreguntas, maxPreguntas, current: questions[index], detailsRef,
   };
 }

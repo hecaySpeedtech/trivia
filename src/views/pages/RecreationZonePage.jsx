@@ -4,6 +4,7 @@ import { useSession } from "../../controllers/SessionContext.jsx";
 import StudentLayout from "../components/StudentLayout.jsx";
 import { useCanvasController } from "../../controllers/useCanvasController.js";
 import { saveDrawingUrl } from "../../models/drawingsService.js";
+import { offlineSync } from "../../models/offlineSyncService.js";
 import { uploadImageToCloudinary } from "../../models/cloudinaryService.js";
 import { supabase } from "../../models/supabaseClient.js";
 import Modal from "../components/Modal.jsx";
@@ -54,6 +55,12 @@ export default function RecreationZonePage() {
     const png = c.exportPNG();
     const up = await uploadImageToCloudinary(png);
     if (up.ok && session.activePatient) {
+      if (!navigator.onLine) {
+        offlineSync.enqueue({ type: "drawing", payload: { patientId: session.activePatient.id, imageUrl: up.url } });
+        setModal({ open: true, title: "Guardado", message: "Tu dibujo se guardará al volver la conexión." });
+        setSaving(false);
+        return;
+      }
       await saveDrawingUrl(session.activePatient.id, up.url);
       // award achievement
       const { data: logro } = await supabase.from("logros").select("id_logro").eq("nombre", "Pequeño Artista").maybeSingle();
