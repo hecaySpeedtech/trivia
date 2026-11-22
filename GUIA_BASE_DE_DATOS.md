@@ -34,3 +34,9 @@ Esquema: `app` en Supabase (PostgreSQL). RLS habilitado en todas las tablas.
 - `003_esquema_tesis_e_indices.sql`
 - `004_fix_multiple_permissive_policies.sql`
 - `005_cierre_advisors_final.sql`
+
+## Advisors post-005 (verificado)
+
+- Security: únicamente `auth_leaked_password_protection` (WARN, requiere plan Pro para activar).
+- Performance: únicamente `unused_index` (INFO, 14 índices sin uso aún; no es error).
+- Eliminados: `multiple_permissive_policies` (3 tablas), `authenticated_security_definer_function_executable` (`app.is_super_admin`), `pg_graphql_authenticated_table_exposed` (14 tablas).
