@@ -2,6 +2,94 @@
 
 > Esta guía es para vos. Si vas a entregar el repositorio a los profesores, conviene borrarla o no incluirla en la entrega final.
 
+## Guía rápida: cómo descargar, configurar e iniciar el proyecto en tu PC
+
+### Requisitos previos (antes de empezar)
+
+- Tener instalado **Node.js** (versión LTS recomendada). Descargalo desde el sitio oficial: `https://nodejs.org`.
+- Comprobá si ya lo tenés abriendo una terminal (PowerShell o la integrada de VS Code) y escribiendo:
+  ```bash
+  node -v
+  npm -v
+  ```
+  Si te muestra un número de versión, está todo bien. Si dice que no se reconoce el comando, instalalo y reiniciá VS Code.
+- Recomendado: **Visual Studio Code** para abrir el proyecto y usar la terminal integrada.
+
+### Paso 1 — Descargar el repositorio en la PC
+
+**Opción A (con Git):** abrí la terminal en la carpeta donde quieras guardar el proyecto y corré:
+
+```bash
+git clone https://github.com/hecaySpeedtech/trivia.git
+cd trivia
+```
+
+**Opción B (sin Git, descargando ZIP):** entrá a `https://github.com/hecaySpeedtech/trivia`, tocá el botón verde **Code** → **Download ZIP**, descomprimí el archivo en una carpeta del disco (por ejemplo `Documentos/trivia`) y abrí esa carpeta desde Visual Studio Code (**Archivo → Abrir carpeta**).
+
+### Paso 2 — Crear el archivo `.env` con las claves privadas
+
+El archivo `.env` **no está en GitHub por seguridad**. Te lo paso yo por mensaje privado.
+
+- Crealo en la **carpeta raíz del proyecto**, al mismo nivel que `package.json` y `.env.example`.
+- El nombre debe ser exactamente `.env`. En Windows advertí que **NO debe quedar guardado como `.env.txt`** (si usás el Bloc de notas, al guardar elegí "Todos los archivos" y escribí el nombre `.env`).
+- Plantilla de nombres de variables (tomada de `.env.example`, con valores de ejemplo; **nunca valores reales**):
+
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
+VITE_CLOUDINARY_UPLOAD_PRESET=your-upload-preset
+VITE_SUPER_ADMIN_EMAIL=admin@trivia.com
+```
+
+Pegá acá tal cual las líneas que te pasé por privado y guardá con `Ctrl + S`.
+
+- **No tenés que ejecutar ningún script SQL ni configurar Supabase**: la base de datos en la nube ya está lista, migrada y conectada mediante ese `.env`.
+
+### Paso 3 — Instalar dependencias
+
+Abrí la terminal integrada en VS Code (`Ctrl + ñ` o menú **Terminal → Nueva terminal**) verificando estar parado dentro de la carpeta `trivia`. Ejecutá:
+
+```bash
+npm install
+```
+
+Tarda unos segundos la primera vez y descarga las librerías en `node_modules`.
+
+### Paso 4 — Iniciar la aplicación en modo desarrollo
+
+Ejecutá exactamente:
+
+```bash
+npm run dev
+```
+
+Abrí en el navegador la URL local que imprime la terminal (normalmente `http://localhost:5173/`). Dejá esa terminal abierta mientras usás la app; para apagarla presioná `Ctrl + C`.
+
+Para entrar al panel docente usá el correo y la contraseña de prueba que te paso aparte por privado.
+
+### Comandos útiles extra (basados en los scripts reales de `package.json`)
+
+- Correr las pruebas automatizadas:
+  ```bash
+  npm test
+  ```
+  (también `npm run test:watch` para modo observador)
+- Probar el compilado de producción:
+  ```bash
+  npm run build
+  ```
+- Previsualizar el build de producción:
+  ```bash
+  npm run preview
+  ```
+
+### Solución rápida de problemas comunes al arrancar
+
+- **Pantalla en blanco o error al conectar con Supabase:** revisá que el archivo se llame exactamente `.env` (no `.env.txt`), esté en la raíz junto a `package.json`, y reiniciá el servidor (`Ctrl + C` y de nuevo `npm run dev`).
+- **Error "`npm` no se reconoce como comando":** falta instalar Node.js (o reiniciar VS Code después de instalarlo).
+- **El puerto 5173 está ocupado:** Vite automáticamente levanta en `5174`; abrí la URL exacta que imprime la terminal.
+
 ## 1. Qué se hizo y qué se arregló (el antes y el después)
 
 - **Migración completa a React + Vite + Tailwind**: la app dejó de ser Vanilla JS y ahora coincide con lo que dice tu Word. La estructura está ordenada en patrón MVC (`src/models`, `src/controllers`, `src/views`).
@@ -16,41 +104,7 @@
 - **Pruebas con casos límite**: Vitest con tests de XSS/CSV injection, Fisher-Yates, localStorage corrupto, rangos, cola offline y 0 preguntas.
 - **Limpieza del código**: sin comentarios robóticos, sin emojis en logs, sin imports muertos.
 
-## 2. Cómo descargar, configurar y correr el proyecto
-
-1. Requisitos: Node.js 20+ y Git.
-2. Clonar:
-   ```bash
-   git clone https://github.com/Elekasal/Videojuego-Trivia-Educativa.git
-   cd Videojuego-Trivia-Educativa
-   ```
-3. Instalar dependencias:
-   ```bash
-   npm install
-   ```
-4. Crear el archivo `.env` en la raíz (te paso las claves por mensaje privado) con:
-   ```
-   VITE_SUPABASE_URL=...
-   VITE_SUPABASE_ANON_KEY=...
-   VITE_CLOUDINARY_CLOUD_NAME=...
-   VITE_CLOUDINARY_UPLOAD_PRESET=...
-   VITE_SUPER_ADMIN_EMAIL=admin@trivia.com
-   ```
-5. Correr en desarrollo:
-   ```bash
-   npm run dev
-   ```
-6. Compilar para producción:
-   ```bash
-   npm run build
-   ```
-7. Correr las pruebas:
-   ```bash
-   npm run test
-   ```
-8. Cuentas de prueba: super_admin con el email configurado en `VITE_SUPER_ADMIN_EMAIL` y la contraseña que te paso por privado. No escribas contraseñas reales en este archivo.
-
-## 3. Mapa simple para entender cómo funciona la app por dentro
+## 2. Mapa simple para entender cómo funciona la app por dentro
 
 - `src/models/`: hablan con Supabase y Cloudinary (servicios).
 - `src/controllers/`: estado y lógica (Contexts, hooks como `useGameController`).
@@ -59,7 +113,7 @@
 - `supabase/migrations/`: SQL versionado (001 a 005).
 - Recorrido de una partida: `LoginPage` → `ProfileSelectPage` (encierro) → `SubjectSelectPage` → `GamePage` (preguntas mezcladas, max_preguntas) → `ResultsPage` (guarda intento + detalles + logros) → `StudentHubPage`.
 
-## 4. Checklist de cumplimiento con la tesis (RF01–RF14, RNF01–RNF10)
+## 3. Checklist de cumplimiento con la tesis (RF01–RF14, RNF01–RNF10)
 
 | ID | Nombre (tesis) | Cómo lo resuelve la app | Archivo a mostrar |
 |---|---|---|---|
@@ -88,7 +142,7 @@
 | RNF09 | Evolutividad modular | Servicios desacoplados + migraciones | `src/models/*` |
 | RNF10 | Observabilidad básica | ErrorBoundary + logger | `ErrorBoundary.jsx`, `loggerService.js` |
 
-## 5. Guía de estudio y preguntas típicas del jurado
+## 4. Guía de estudio y preguntas típicas del jurado
 
 1. **¿Por qué React + Vite y cliente grueso en un hospital?**  
    Porque el hospital puede tener Wi-Fi inestable; el cliente grueso permite offline, respuestas inmediatas y menos dependencia del servidor. Vite da builds rápidos y SPA desplegable en Vercel.
@@ -132,6 +186,6 @@
 14. **¿Cómo se persiste una partida?**  
     `activeGame` en `localStorage` guarda preguntas, índice, puntaje y detalles; se restaura al volver.
 
-## 6. Aviso importante antes de entregar a la universidad
+## 5. Aviso importante antes de entregar a la universidad
 
 `LeeLuka.md` es una guía interna para vos. Conviene borrarla (o no incluirla) cuando entregues el repositorio final a los profesores.
