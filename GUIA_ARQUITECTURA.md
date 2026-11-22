@@ -123,31 +123,31 @@ flowchart TD
 6. Partida en curso persistida en `activeGame` → F5 o "Pausar y volver" retoma desde `StudentHubPage.jsx`.
 7. Offline: `offlineSyncService.js` + `OfflineContext.jsx` encolan intentos/dibujos y sincronizan al evento `online` o botón manual.
 
-## 6. Matriz de cumplimiento
+## 6. Matriz de cumplimiento (Capítulo 5 de la tesis)
 
-| Req | Estado | Implementación |
-|---|---|---|
-| RF01 | ✅ Cumplido | `AuthContext.jsx` (isSuperAdmin = profile.rol === 'super_admin'); `authService.js` (getProfile lee app.docentes); `RouteGuards.jsx` RequireSuperAdmin; `TeacherManagerPage.jsx` usa createEphemeralClient |
-| RF02 | ✅ Cumplido | `PatientsPage.jsx`, `patientsService.js` (solo nombre/alias + avatar; dni nullable) |
-| RF03 | ✅ Cumplido | `SubjectSelectPage.jsx` (getCycles/getSubjectsList/getEstadoUnidades) |
-| RF04 | ✅ Cumplido | `useGameController.js` (max_preguntas + slice); `GamePage.jsx` (default 5); `SettingsPage.jsx` |
-| RF05 | ✅ Cumplido | `utils/shuffle.js` (Fisher-Yates); `useGameController.js` (mezcla preguntas y opciones) |
-| RF06 | ✅ Cumplido | `GamePage.jsx` (color + ícono + feedbackMessages + bloqueo doble clic + media_url/media_type) |
-| RF07 | ✅ Cumplido | `ResultsPage.jsx` (síntesis + confetti local); `gameService.js` saveGameAttempt (intentos + intento_detalles + tiempo) |
-| RF08 | ✅ Cumplido | `SessionContext.jsx` (activeGame/activePatient/studentModeLocked en localStorage); `StudentHubPage.jsx` (Continuar partida) |
-| RF09 | ✅ Cumplido | `DashboardPage.jsx` (DoughnutChart chart.js local; métricas propias/globales; CSV filtrado) |
-| RF10 | ✅ Cumplido | `PatientHistoryPage.jsx` (eliminar intentos/dibujos con Modal) |
-| RF11 | ✅ Cumplido | `SubjectManagerPage.jsx`, `QuestionManagerPage.jsx`, `QuestionFormPage.jsx` (CRUD) |
-| RF12 | ✅ Cumplido | `offlineSyncService.js`, `OfflineContext.jsx`, `OfflineBanner.jsx` |
-| RF13 | ✅ Cumplido | `csvExport.js` (BOM \uFEFF + escape) |
-| RF14 | ✅ Cumplido | `ProfileSelectPage.jsx` (studentModeLocked); `RouteGuards.jsx` RequireTeacherMode; `RecreationZonePage.jsx` (touch-action none, redirige /student-hub) |
-| RNF01 | ✅ Cumplido | 0 ocurrencias de innerHTML/dangerouslySetInnerHTML/CDN en src/ |
-| RNF02 | ✅ Cumplido | `ErrorBoundary.jsx` envuelve la app en `main.jsx` |
-| RNF03 | ✅ Cumplido | Roles reales desde `app.docentes.rol` |
-| RNF04 | ✅ Cumplido | `loggerService.js` + visor en Dashboard |
-| RNF05 | ✅ Cumplido | `ReAuthModal.jsx` para salir del modo alumno |
-| RNF06 | ✅ Cumplido | Offline + localStorage (ver RF08/RF12) |
-| RNF07 | ✅ Cumplido | RLS multi-docente en Supabase (migraciones 001-005) |
-| RNF08 | ✅ Cumplido | Sin `navigate()` durante render (verificado en páginas) |
-| RNF09 | ✅ Cumplido | Accesibilidad: color + ícono en `GamePage.jsx` |
-| RNF10 | ✅ Cumplido | `npm run build` exit 0 |
+| ID | Requerimiento | Estado | Implementación real en `src/` |
+|---|---|---|---|
+| RF01 | Acceso institucional | ✅ Cumplido | `AuthContext.jsx` (`isSuperAdmin`), `authService.js` (`getProfile`), `RouteGuards.jsx` (`RequireSuperAdmin`), `TeacherManagerPage.jsx` (cliente efímero) |
+| RF02 | Identificación pedagógica | ✅ Cumplido | `PatientsPage.jsx`, `patientsService.js` (nombre/alias + avatar; `dni` nullable) |
+| RF03 | Configuración didáctica inicial | ✅ Cumplido | `SubjectSelectPage.jsx` (`getCycles`, `getSubjectsList`, `getEstadoUnidades`), `SettingsPage.jsx` |
+| RF04 | Presentación de consignas (sesiones breves finitas) | ✅ Cumplido | `useGameController.js` (`max_preguntas` + `slice`), `GamePage.jsx` (default 5) |
+| RF05 | Aleatorización de actividades | ✅ Cumplido | `utils/shuffle.js` (`fisherYates`), `useGameController.js` (preguntas y opciones) |
+| RF06 | Retroalimentación formativa | ✅ Cumplido | `GamePage.jsx` (color + ícono + bloqueo doble clic + media), `utils/feedbackMessages.js` |
+| RF07 | Síntesis del desempeño | ✅ Cumplido | `ResultsPage.jsx` (síntesis + confetti local), `gameService.js` (`saveGameAttempt` con intentos + detalles + tiempo) |
+| RF08 | Sincronización de sesiones | ✅ Cumplido | `gameService.js`, `offlineSyncService.js`, `OfflineContext.jsx` |
+| RF09 | Consulta docente centralizada | ✅ Cumplido | `DashboardPage.jsx`, `DoughnutChart.jsx`, `PatientHistoryPage.jsx` |
+| RF10 | Depuración responsable | ✅ Cumplido | `PatientsPage.jsx`, `PatientHistoryPage.jsx` (eliminación con `Modal`) |
+| RF11 | Gestión autónoma de contenidos | ✅ Cumplido | `SubjectManagerPage.jsx`, `QuestionManagerPage.jsx`, `QuestionFormPage.jsx`, `SettingsPage.jsx` |
+| RF12 | Mitigación de interrupciones | ✅ Cumplido | `SessionContext.jsx` (`activeGame`), `GamePage.jsx` (pausa/retorno), `StudentHubPage.jsx` (Continuar partida) |
+| RF13 | Reportes de acompañamiento | ✅ Cumplido | `DashboardPage.jsx`, `PatientHistoryPage.jsx`, `utils/csvExport.js` (BOM + escape) |
+| RF14 | Zona de contención socioafectiva | ✅ Cumplido | `RecreationZonePage.jsx`, `useCanvasController.js`, logro "Pequeño Artista", encierro a `/student-hub` |
+| RNF01 | Usabilidad | ✅ Cumplido | `StudentLayout.jsx`, `TeacherLayout.jsx` |
+| RNF02 | Accesibilidad contextual | ✅ Cumplido | `GamePage.jsx` (color + ícono), canvas `touch-action: none`, `lang="es"` en `index.html` |
+| RNF03 | Eficiencia percibida | ✅ Cumplido | Chart.js y canvas-confetti locales; índices en 15+ FKs |
+| RNF04 | Compatibilidad multiplataforma | ✅ Cumplido | SPA React + Vite (navegador, tablets, celulares, PC) |
+| RNF05 | Seguridad y privacidad | ✅ Cumplido | Auth + RLS (migraciones 001–005), roles reales, `RequireTeacherMode` + `ReAuthModal`, `.env`, 0 `innerHTML` |
+| RNF06 | Confiabilidad transaccional | ✅ Cumplido | `localStorage` + `offlineSyncService` + auto-sync `online` + `OfflineBanner` |
+| RNF07 | Organización arquitectónica | ✅ Cumplido | MVC en `src/models/`, `src/controllers/`, `src/views/` |
+| RNF08 | Portabilidad y despliegue | ✅ Cumplido | `vite.config.js`, `vercel.json`, `.env.example`, `npm run build` exit 0 |
+| RNF09 | Evolutividad modular | ✅ Cumplido | Servicios/componentes desacoplados + migraciones versionadas |
+| RNF10 | Observabilidad básica | ✅ Cumplido | `ErrorBoundary.jsx` en `main.jsx`, `loggerService.js` con visor en `DashboardPage` |
