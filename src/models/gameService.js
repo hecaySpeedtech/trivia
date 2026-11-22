@@ -23,8 +23,12 @@ export async function saveGameAttempt(patientId, subjectName, cycle, correct, in
 export async function getTeacherMetrics() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return _fail({ message: "No hay sesión activa." });
-  const { data, error } = await supabase.from("intentos")
-    .select("respuestas_correctas, respuestas_incorrectas").eq("creado_por", session.user.id);
+  // super_admin ve métricas globales
+  const { data: prof } = await supabase.from("docentes").select("rol").eq("id_docente", session.user.id).maybeSingle();
+  const isSuper = prof?.rol === "super_admin";
+  let q = supabase.from("intentos").select("respuestas_correctas, respuestas_incorrectas");
+  if (!isSuper) q = q.eq("creado_por", session.user.id);
+  const { data, error } = await q;
   if (error) return _fail(error);
   let totalCorrect = 0, totalIncorrect = 0;
   (data || []).forEach((r) => { totalCorrect += r.respuestas_correctas || 0; totalIncorrect += r.respuestas_incorrectas || 0; });
